@@ -6,6 +6,7 @@ import com.javanauta.usuario.infrastructure.entity.Usuario;
 import com.javanauta.usuario.infrastructure.exceptions.ConflictException;
 import com.javanauta.usuario.infrastructure.exceptions.ResourceNotFoundException;
 import com.javanauta.usuario.infrastructure.repository.UsuarioRepository;
+import com.javanauta.usuario.infrastructure.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,6 +18,7 @@ public class UsuarioService {
   private final UsuarioRepository usuarioRepository;
   private final UsuarioConverter usuarioConverter;
   private final PasswordEncoder passwordEncoder;
+  private final JwtUtil jwtUtil;
 
   public UsuarioDTO salvarUsuario(UsuarioDTO usuarioDTO) {
     emailExiste(usuarioDTO.getEmail());
@@ -39,7 +41,7 @@ public class UsuarioService {
   public boolean verificaEmailExistente(String email) {
     return usuarioRepository.existsByEmail(email);
   }
-
+    // trocar retorno por DTO
   public Usuario buscarUsuarioPorEmail(String email) {
     return (Usuario) usuarioRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException(
         "Email não encontrado " + email
@@ -48,5 +50,18 @@ public class UsuarioService {
 
   public void deletaUsuarioPorEmail(String email) {
     usuarioRepository.deleteByEmail(email);
+  }
+
+  public UsuarioDTO atualizaDadosUsuario(String token, UsuarioDTO usuarioDTO) {
+    String email = jwtUtil.extractUsername(token.substring(7));
+
+    usuarioDTO.setSenha(usuarioDTO.getSenha() != null ? passwordEncoder.encode(usuarioDTO.getSenha()) : null);
+
+    Usuario usuarioEntity = (Usuario) usuarioRepository.findByEmail(email).orElseThrow(
+        () -> new ResourceNotFoundException("Email não encontrado!"));
+
+    Usuario usuario = usuarioConverter.updateUsuario(usuarioDTO, usuarioEntity);
+
+    return usuarioConverter.toUsuarioDTO(usuarioRepository.save(usuario));
   }
 }
