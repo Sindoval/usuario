@@ -1,7 +1,5 @@
 package com.javanauta.usuario.infrastructure.entity;
 
-import com.javanauta.AprendendoSpring.infrastructure.entity.Endereco;
-import com.javanauta.AprendendoSpring.infrastructure.entity.Telefone;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,6 +12,7 @@ import jakarta.persistence.Table;
 import java.util.Collection;
 import java.util.List;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,6 +23,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Entity
 @Table(name = "usuario")
 public class Usuario implements UserDetails {
