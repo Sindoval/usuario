@@ -78,6 +78,7 @@ public class UsuarioConverter {
         ;
   }
 
+
   public List<TelefoneDTO> toListTelefoneDTO(List<Telefone> telefones) {
     return telefones.stream().map(this::toTelefoneDTO).toList();
   }
@@ -121,6 +122,27 @@ public class UsuarioConverter {
         .id(telefone.getId())
         .numero(telefoneDTO.getNumero() != null ? telefoneDTO.getNumero() : telefone.getNumero())
         .ddd(telefoneDTO.getDdd() != null ? telefoneDTO.getDdd() : telefone.getDdd())
+        .build();
+  }
+
+  public Endereco toEnderecoEntity(EnderecoDTO enderecoDTO, Long usuarioId) {
+    return Endereco.builder()
+        .rua(enderecoDTO.getRua())
+        .cep(enderecoDTO.getCep())
+        .cidade(enderecoDTO.getCidade())
+        .complemento(enderecoDTO.getComplemento())
+        .estado(enderecoDTO.getEstado())
+        .numero(enderecoDTO.getNumero())
+        .usuario_id(usuarioId)
+        .build()
+        ;
+  }
+
+  public Telefone toTelefoneEntity(TelefoneDTO telefoneDTO, Long idUsuario) {
+    return Telefone.builder()
+        .numero(telefoneDTO.getNumero())
+        .ddd(telefoneDTO.getDdd())
+        .usuario_id(idUsuario)
         .build();
   }
 }
