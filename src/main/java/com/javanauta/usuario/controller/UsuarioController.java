@@ -1,9 +1,11 @@
 package com.javanauta.usuario.controller;
 
 import com.javanauta.usuario.business.UsuarioService;
+import com.javanauta.usuario.business.ViaCepService;
 import com.javanauta.usuario.business.dto.EnderecoDTO;
 import com.javanauta.usuario.business.dto.TelefoneDTO;
 import com.javanauta.usuario.business.dto.UsuarioDTO;
+import com.javanauta.usuario.infrastructure.clients.dto.ViaCepDTO;
 import com.javanauta.usuario.infrastructure.entity.Usuario;
 import com.javanauta.usuario.infrastructure.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class UsuarioController {
   private final UsuarioService usuarioService;
+  private final ViaCepService viaCepService;
   private final AuthenticationManager authenticationManager;
   private final JwtUtil jwtUtil;
 
@@ -82,5 +85,10 @@ public class UsuarioController {
   public ResponseEntity<TelefoneDTO> salvarTelefone(@RequestBody TelefoneDTO telefoneDTO,
       @RequestHeader("Authorization") String token) {
     return ResponseEntity.ok(usuarioService.cadastroTelefone(token, telefoneDTO));
+  }
+
+  @GetMapping("/endereco/{cep}")
+  public ResponseEntity<ViaCepDTO> buscarDadosCep(@PathVariable String cep) {
+    return ResponseEntity.ok(viaCepService.biscarDadosEndereco(cep));
   }
 }
