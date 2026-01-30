@@ -6,7 +6,6 @@ import com.javanauta.usuario.business.dto.EnderecoDTO;
 import com.javanauta.usuario.business.dto.TelefoneDTO;
 import com.javanauta.usuario.business.dto.UsuarioDTO;
 import com.javanauta.usuario.infrastructure.clients.dto.ViaCepDTO;
-import com.javanauta.usuario.infrastructure.entity.Usuario;
 import com.javanauta.usuario.infrastructure.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -30,8 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UsuarioController {
   private final UsuarioService usuarioService;
   private final ViaCepService viaCepService;
-  private final AuthenticationManager authenticationManager;
-  private final JwtUtil jwtUtil;
+
 
   @PostMapping
   public ResponseEntity<UsuarioDTO> salvarUsuario(@RequestBody UsuarioDTO usuarioDTO) {
@@ -39,11 +37,8 @@ public class UsuarioController {
   }
 
   @PostMapping("/login")
-  public String login(@RequestBody UsuarioDTO usuarioDto) {
-    Authentication authentication = authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(usuarioDto.getEmail(), usuarioDto.getSenha())
-    );
-    return "Bearer " + jwtUtil.generateToken(authentication.getName());
+  public ResponseEntity<String> login(@RequestBody UsuarioDTO usuarioDto) {
+    return ResponseEntity.ok(usuarioService.autenticarUsuario(usuarioDto));
   }
 
   @GetMapping
