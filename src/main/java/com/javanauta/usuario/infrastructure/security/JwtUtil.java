@@ -2,23 +2,20 @@ package com.javanauta.usuario.infrastructure.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import java.util.Base64;
-import org.springframework.stereotype.Service;
-
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import javax.crypto.SecretKey;
+import org.springframework.stereotype.Service;
 
 @Service
 public class JwtUtil {
 
     // Chave secreta usada para assinar e verificar tokens JWT
-    private final String secretKey = "c3VhX2NoYXZlX3NlY3JldGFfc3VwZXJfc2VndXJhX3F1ZV9kZXZlX3Nlcl9iZW1fbG9uZ2E=";
+    private static final String SECRET_KEY = "c3VhX2NoYXZlX3NlY3JldGFfc3VwZXJfc2VndXJhX3F1ZV9kZXZlX3Nlcl9iZW1fbG9uZ2E=";
 
     private SecretKey getSecretKey() {
-        byte[] key = Base64.getDecoder().decode(secretKey);
+        byte[] key = Base64.getDecoder().decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(key);
     }
 
