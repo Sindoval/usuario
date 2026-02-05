@@ -88,16 +88,25 @@ public class UsuarioService {
   }
 
   public UsuarioDTO atualizaDadosUsuario(String token, UsuarioDTO usuarioDTO) {
-    String email = jwtUtil.extractUsername(token.substring(7));
+    String emailDoToken = jwtUtil.extractUsername(token.substring(7));
 
     usuarioDTO.setSenha(usuarioDTO.getSenha() != null ? passwordEncoder.encode(usuarioDTO.getSenha()) : null);
 
-    Usuario usuarioEntity = (Usuario) usuarioRepository.findByEmail(email).orElseThrow(
+    Usuario usuarioEntity = (Usuario) usuarioRepository.findByEmail(emailDoToken).orElseThrow(
         () -> new ResourceNotFoundException("Email não encontrado!"));
 
-    Usuario usuario = usuarioConverter.updateUsuario(usuarioDTO, usuarioEntity);
+    Usuario usuarioAtualizado = usuarioConverter.updateUsuario(usuarioDTO, usuarioEntity);
+    Usuario usuarioSalvo = usuarioRepository.save(usuarioAtualizado);
 
-    return usuarioConverter.toUsuarioDTO(usuarioRepository.save(usuario));
+    UsuarioDTO responseDTO = usuarioConverter.toUsuarioDTO(usuarioSalvo, emailDoToken);
+
+    // SE o e-mail mudou, geramos um NOVO TOKEN com o novo e-mail
+    if (!emailDoToken.equals(usuarioSalvo.getEmail())) {
+      String novoTokenGerado = jwtUtil.generateToken(usuarioSalvo.getEmail());
+      responseDTO.setNovoToken("Bearer " + novoTokenGerado);
+    }
+
+    return responseDTO;
   }
 
   public EnderecoDTO atualizaEndereco(Long idEndereco, EnderecoDTO enderecoDTO) {

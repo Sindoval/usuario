@@ -18,6 +18,6 @@ public class UsuarioDTO {
   private String senha;
   private List<EnderecoDTO> enderecos;
   private List<TelefoneDTO> telefones;
-
-
+  private String emailAnterior;
+  private String novoToken;
 }

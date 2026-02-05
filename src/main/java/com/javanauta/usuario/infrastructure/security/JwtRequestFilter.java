@@ -1,20 +1,16 @@
 package com.javanauta.usuario.infrastructure.security;
 
-import com.javanauta.usuario.infrastructure.exceptions.dto.ErrorResponseDTO;
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.filter.OncePerRequestFilter;
-import tools.jackson.databind.ObjectMapper;
 
 // Define a classe JwtRequestFilter, que estende   OncePerRequestFilter
 public class JwtRequestFilter extends OncePerRequestFilter {
@@ -63,28 +59,47 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
             // Obtém o valor do header "Authorization" da requisição
 
-        } catch (ExpiredJwtException e) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            response.getWriter().write(buildMessageError(
-                HttpStatus.UNAUTHORIZED.value(),
-                "Token expirado",
-                request.getRequestURI(),
-                e.getMessage()
-                ));
+        } catch (io.jsonwebtoken.JwtException e) {
+            // JwtException captura ExpiredJwtException, SignatureException, MalformedJwtException, etc.
+            handleJwtError(response, request, e);
+        } catch (Exception e) {
+            // Captura qualquer outro erro inesperado para não retornar 404 vazio
+            handleJwtError(response, request, e);
         }
+    }
+    private void handleJwtError(HttpServletResponse response, HttpServletRequest request, Exception e) throws IOException {
+        if (!response.isCommitted()) {
+            response.reset();
+        }
+
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        String message = "Token inválido ou expirado";
+        if (e instanceof io.jsonwebtoken.ExpiredJwtException) {
+            message = "Token expirado";
+        }
+
+        String jsonResponse = buildMessageError(
+            HttpStatus.UNAUTHORIZED.value(),
+            message,
+            request.getRequestURI(),
+            e.getMessage() != null ? e.getMessage() : "Erro na validação do token"
+        );
+
+        response.getWriter().write(jsonResponse);
+        response.getWriter().flush();
+        response.getWriter().close();
     }
 
     private String buildMessageError(int status, String message, String path, String error) {
-        ErrorResponseDTO errorResponseDTO = ErrorResponseDTO.builder()
-            .status(status)
-            .message(message)
-            .path(path)
-            .error(error)
-            .build();
-
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        return objectMapper.writeValueAsString(errorResponseDTO);
+        return "{" +
+            "\"status\": " + status + "," +
+            "\"message\": \"" + message + "\"," +
+            "\"path\": \"" + path + "\"," +
+            "\"error\": \"" + error + "\"," +
+            "\"timestamp\": \"" + java.time.LocalDateTime.now() + "\"" +
+            "}";
     }
 }
